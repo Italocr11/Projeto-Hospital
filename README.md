@@ -25,3 +25,4 @@ O sistema permite o controle de:
 - Bruno Gomes de Oliveira
 - Italo Cardoso Rael
 - Luis Fernando Moreira Beani
+- Guilherme Rodrigues Soares
