@@ -1,43 +1,40 @@
-USE sistema_compras;
+USE sistema_hospitalar;
 
-SELECT id_cliente, nome, email 
-FROM cliente 
-WHERE id_cliente IN (
-    SELECT id_cliente 
-    FROM compra 
-    WHERE valor_total > (SELECT AVG(valor_total) FROM compra)
+SELECT nome, idade 
+FROM paciente 
+WHERE id_paciente IN (
+    SELECT id_paciente_fk 
+    FROM triagem 
+    WHERE prioridade = 'Emergência'
 );
 
-SELECT c.id_cliente, c.nome, c.email 
-FROM cliente c 
+SELECT f.nome, m.crm, m.especialidade 
+FROM funcionario f
+JOIN medico m ON f.id_funcionario = m.id_funcionario
 WHERE EXISTS (
     SELECT 1 
-    FROM compra co
-    JOIN item_compra ic ON co.id_compra = ic.id_compra
-    WHERE co.id_cliente = c.id_cliente 
-      AND ic.nome_produto = 'Notebook Dell Inspiron'
+    FROM consulta c 
+    WHERE c.id_funcionario_fk = m.id_funcionario
 );
 
-SELECT c.nome,
-       (SELECT MAX(co.data_compra) 
-        FROM compra co 
-        WHERE co.id_cliente = c.id_cliente) AS data_ultima_compra
-FROM cliente c;
+SELECT nome, salario 
+FROM funcionario 
+WHERE salario > (SELECT AVG(salario) FROM funcionario);
 
-SELECT id_compra, data_compra, valor_total 
-FROM compra 
-WHERE valor_total = (SELECT MAX(valor_total) FROM compra);
+SELECT p.nome,
+       (SELECT COUNT(*) 
+        FROM triagem t 
+        WHERE t.id_paciente_fk = p.id_paciente) AS total_atendimentos_triagem
+FROM paciente p;
 
-SELECT nome, email AS contato, 'Cliente' AS perfil 
-FROM cliente
+SELECT nome, 'Paciente' AS papel_no_hospital FROM paciente
 UNION
-SELECT nome, CONCAT('Matrícula: ', matricula) AS contato, 'Vendedor' AS perfil 
-FROM vendedor;
+SELECT nome, 'Funcionário/Médico' AS papel_no_hospital FROM funcionario;
 
-SELECT nome AS nome_destaque, 'Cliente VIP' AS motivo_destaque 
-FROM cliente 
-WHERE id_cliente IN (SELECT id_cliente FROM compra WHERE valor_total > 2000.00)
+SELECT nome, 'Critério: Idoso (Grupo de Risco)' AS motivo_prioridade 
+FROM paciente 
+WHERE idade > 60
 UNION
-SELECT nome AS nome_destaque, 'Vendedor Alta Performance' AS motivo_destaque 
-FROM vendedor 
-WHERE percentual_comissao >= 3.00;
+SELECT p.nome, 'Critério: Triagem de Alta Prioridade' AS motivo_prioridade 
+FROM paciente p
+WHERE p.id_paciente IN (SELECT id_paciente_fk FROM triagem WHERE prioridade = 'Alta');
